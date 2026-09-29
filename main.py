@@ -1,4 +1,4 @@
-"""Точка входа. Запуск: python main.py <url>"""
+ЖОПА СУКА ГОВНО ЕБАННОЕ
 
 from __future__ import annotations
 
