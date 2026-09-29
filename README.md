@@ -54,8 +54,12 @@ git clone <url репозитория>
 cd <папка>
 python -m venv .venv
 .venv\Scripts\activate        # Windows
-pip install -r requirements.txt
+pip install -r requirements.lock.txt
 ```
+
+`requirements.txt` хранит прямые зависимости, `requirements.lock.txt` —
+их точные версии. Ставьте по lock-файлу, тогда у всех одинаковое
+окружение и «у меня не запускается» не возникает.
 
 ## Запуск
 
