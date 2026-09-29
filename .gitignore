@@ -1,0 +1,51 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# Тесты и инструменты
+.pytest_cache/
+.coverage
+htmlcov/
+.ruff_cache/
+.mypy_cache/
+
+# Локальная модель и её веса
+*.gguf
+*.safetensors
+*.bin
+ollama/
+
+# Данные для отладки
+*.har
+dump/
+screenshot/
+page_dump/
+debug_*.html
+
+# Результаты
+report.json
+results/
+
+# Секреты
+.env
+*.key
+*.pem
+
+# Переписка с преподавателем: содержит реальные имена и адреса почты,
+# наружу не выкладываем
+переписка.txt
+*.txt.bak
+
+# Скриншоты переписки
+[1-4].png
+[1-4].jpg
+
+# IDE
+.idea/
+.vscode/
+*.swp
+.DS_Store
