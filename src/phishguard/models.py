@@ -76,6 +76,20 @@ class CertInfo:
     days_left: int | None = None
     hostname_mismatch: bool = False
     self_signed: bool = False
+    expired: bool = False
+    untrusted: bool = False
+    error: str | None = None
+
+    @property
+    def invalid(self) -> bool:
+        return any(
+            (
+                self.hostname_mismatch,
+                self.self_signed,
+                self.expired,
+                self.untrusted,
+            )
+        )
 
 
 @dataclass
