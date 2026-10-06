@@ -22,10 +22,10 @@ SHORTENERS = {
 
 SUSPICIOUS_CHARS = re.compile(r"@|\\|\.\.|&#|%2[0-9a-fA-F]%")
 BRANDS = [
-    "sberbank", "сбербанк", "tinkoff", "тинкофф", "alfabank", "альфа",
-    "vtb", "втб", "mail.ru", "mail", "yandex", "яндекс", "gosuslugi",
-    "госуслуги", "wildberries", "ozon", "яндекс.маркет", "wb", "cdek",
-    "вконтакте", "vk", "ok.ru", "telegram", "телеграм",
+    "sberbank", "сбербанк", "tinkoff", "тинкофф", "alfabank", "альфа-банк",
+    "vtb", "втб", "yandex", "яндекс", "gosuslugi", "госуслуги",
+    "wildberries", "ozon", "cdek", "сдэк",
+    "вконтакте", "telegram", "телеграм", "whatsapp", "whats app",
 ]
 
 WEIGHTS = {
@@ -41,6 +41,13 @@ WEIGHTS = {
 
 
 def normalize_url(url: str) -> str:
+    """Приводит адрес к виду, с которым удобно работать.
+
+    Добавляет схему, если её нет, и понижает регистр хоста.
+    Намеренно НЕ подставляет www.: это угадывание, и оно ломает проверку
+    сертификата — www.вариант может отсутствовать в SAN, хотя оригинал
+    валиден. Сравнение доменов с www и без делается в _host(), а не здесь.
+    """
     url = url.strip()
     if not url:
         return url
@@ -48,10 +55,6 @@ def normalize_url(url: str) -> str:
         url = "http://" + url
     parts = urlparse(url)
     netloc = parts.netloc.lower()
-    hostname = parts.hostname or ""
-    is_domain = "." in hostname and not _is_ip(hostname) and hostname != "localhost"
-    if is_domain and not netloc.startswith("www."):
-        netloc = "www." + netloc
     return urlunparse(parts._replace(netloc=netloc))
 
 
@@ -64,7 +67,7 @@ def _is_ip(host: str) -> bool:
     return bool(re.fullmatch(r"\d{1,3}(?:\.\d{1,3}){3}", host))
 
 
-def _registrable_domain(host: str) -> str:
+def registrable_domain(host: str) -> str:
     parts = host.split(".")
     if len(parts) <= 2:
         return host
@@ -74,7 +77,7 @@ def _registrable_domain(host: str) -> str:
 
 
 def _is_shortener(host: str) -> bool:
-    return _registrable_domain(host) in SHORTENERS or host in SHORTENERS
+    return registrable_domain(host) in SHORTENERS or host in SHORTENERS
 
 
 def check_url(url: str) -> UrlReport:
@@ -84,7 +87,7 @@ def check_url(url: str) -> UrlReport:
     report = UrlReport(
         original_url=url,
         normalized_url=normalized,
-        registrable_domain=_registrable_domain(host),
+        registrable_domain=registrable_domain(host),
         has_ip_host=_is_ip(host),
         is_shortener=_is_shortener(host),
         has_punycode=host.startswith("xn--") or ".xn--" in host,
