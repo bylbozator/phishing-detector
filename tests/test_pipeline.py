@@ -81,25 +81,62 @@ def test_page_features_prompt_dict_is_json_serializable():
     assert json.loads(json.dumps(payload, ensure_ascii=False))["title"] == "Login"
 
 
-def test_pipeline_runs_with_unimplemented_modules():
-    report = pipeline.run("http://bit.ly/sberbank-login", PipelineConfigShim())
+def offline_config() -> pipeline.PipelineConfig:
+    """Этапы 2 и 3 не запускаются: тесты идут без браузера и без сети."""
+    return pipeline.PipelineConfig(use_page_analyzer=False, use_llm=False)
+
+
+def test_pipeline_runs_offline():
+    report = pipeline.run("http://bit.ly/sberbank-login", offline_config())
     assert report.final_score > 0
     assert report.risk in ("medium", "high", "critical")
     stages = {s.stage: s for s in report.stages}
+    assert stages["url"].implemented is True
+    assert stages["summary"].implemented is True
+    assert "page" not in stages
+
+
+def test_pipeline_survives_unimplemented_module(monkeypatch):
+    monkeypatch.setattr(
+        pipeline.page_analyzer,
+        "analyze_page",
+        lambda url: (_ for _ in ()).throw(NotImplementedError("в разработке")),
+    )
+    report = pipeline.run(
+        "https://www.python.org/", pipeline.PipelineConfig(use_llm=False)
+    )
+    stages = {s.stage: s for s in report.stages}
     assert stages["page"].implemented is False
-    assert "render" and synthesizer.render(report)
+    assert "в разработке" in stages["page"].error
+    assert report.final_score >= 0.0
+
+
+def test_pipeline_survives_broken_module(monkeypatch):
+    def boom(url):
+        raise RuntimeError("браузер не запустился")
+
+    monkeypatch.setattr(pipeline.page_analyzer, "analyze_page", boom)
+    report = pipeline.run(
+        "https://www.python.org/", pipeline.PipelineConfig(use_llm=False)
+    )
+    stages = {s.stage: s for s in report.stages}
+    assert stages["page"].error and "браузер не запустился" in stages["page"].error
+    assert report.final_score >= 0.0
 
 
 def test_pipeline_survives_bad_input():
-    report = pipeline.run("", PipelineConfigShim())
+    report = pipeline.run("", offline_config())
     assert report.final_score >= 0.0
 
 
 def test_report_is_json_serializable():
-    report = pipeline.run("https://www.python.org/", PipelineConfigShim())
+    report = pipeline.run("https://www.python.org/", offline_config())
     json.dumps(report.to_dict(), ensure_ascii=False)
 
 
-class PipelineConfigShim(pipeline.PipelineConfig):
-    def __init__(self):
-        super().__init__(use_page_analyzer=True, use_llm=True)
+def test_render_outputs_verdict():
+    report = pipeline.run("http://bit.ly/sberbank-login", offline_config())
+    text = synthesizer.render(report)
+    assert "Итоговый риск" in text
+    assert "Рекомендация" in text
+    assert "[URL]" in text
