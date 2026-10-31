@@ -11,6 +11,12 @@ sys.path.insert(0, str(Path(__file__).parent / "src"))
 
 from phishguard import llm_judge, pipeline, synthesizer  # noqa: E402
 
+# На русской Windows консоль по умолчанию cp1251, в ней кириллица из отчёта
+# не печатается и программа падает с UnicodeEncodeError. Выводим UTF-8.
+for _stream in (sys.stdout, sys.stderr):
+    if _stream is not None and _stream.encoding and _stream.encoding.lower() != "utf-8":
+        _stream.reconfigure(encoding="utf-8", errors="replace")
+
 
 def main() -> int:
     parser = argparse.ArgumentParser(
