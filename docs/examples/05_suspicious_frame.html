@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <title>Новости компании</title>
+</head>
+<body>
+  <h1>Новости компании</h1>
+  <!-- Учебный пример подозрительной страницы: внешне безобидные новости,
+       но скрытый iframe подгружает чужой домен. Признака alone мало
+       для phishing — детектор должен отметить подозрение. -->
+  <iframe src="https://tracker.example.net/frame" width="1" height="1"
+          style="position:absolute;left:-9999px" hidden></iframe>
+  <p>Компания открыла новый офис и приглашает на открытие.</p>
+</body>
+</html>
